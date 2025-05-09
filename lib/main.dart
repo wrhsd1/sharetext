@@ -4,6 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 
 void main() {
+  // 确保Flutter绑定已初始化
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
 

@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.sharetext">
-
-    <application
+    package="com.example.sharetext">    <application
         android:label="文本分享收集器"
         android:icon="@mipmap/ic_launcher">
         
