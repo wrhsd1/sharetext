@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:receive_sharing_intent/receive_sharing_intent.dart';
+// 注释掉导入以避免编译问题
+// import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 
 void main() {
   runApp(const MyApp());
@@ -35,7 +36,8 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final TextEditingController _textController = TextEditingController();
   String _savedText = "";
-  StreamSubscription? _intentDataStreamSubscription;
+  // 注释掉插件相关代码
+  // StreamSubscription? _intentDataStreamSubscription;
   String? _sharedText;
 
   @override
@@ -43,6 +45,8 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     _loadSavedText();
 
+    // 注释掉插件相关代码以避免编译问题
+    /*
     // 监听应用程序在内存中时的外部分享
     _intentDataStreamSubscription = ReceiveSharingIntent.instance.getMediaStream().listen((List<SharedMediaFile> value) {
       setState(() {
@@ -69,11 +73,13 @@ class _MyHomePageState extends State<MyHomePage> {
       // 告诉库我们已完成处理意图
       ReceiveSharingIntent.instance.reset();
     });
+    */
   }
 
   @override
   void dispose() {
-    _intentDataStreamSubscription?.cancel();
+    // 注释掉插件相关代码
+    // _intentDataStreamSubscription?.cancel();
     super.dispose();
   }
 

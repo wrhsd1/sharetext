@@ -42,6 +42,17 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
           cache: 'gradle'
+          
+      # 输出 Java 环境信息并设置 JAVA_HOME
+      - name: 设置 Java 环境变量
+        run: |
+          echo "Java 版本:"
+          java -version
+          echo "Java 主目录:"
+          echo $JAVA_HOME
+          echo "JAVA_HOME=$JAVA_HOME" >> $GITHUB_ENV
+          # 创建 local.properties 文件以设置 sdk.dir
+          echo "sdk.dir=$ANDROID_HOME" > android/local.properties
 
       # 设置Flutter环境
       - name: 设置Flutter环境
@@ -70,28 +81,7 @@ jobs:
       - name: 获取Flutter依赖
         run: flutter pub get
 
-      # 修复 receive_sharing_intent 插件的 Java 和 Kotlin 编译版本不匹配问题
-      - name: 修复插件编译问题
-        run: |
-          echo "修复 receive_sharing_intent 插件的 Java 和 Kotlin 编译版本不匹配问题"
-          PLUGIN_PATH=$(find ~/.pub-cache -name "receive_sharing_intent-*" -type d | grep -v "example" | head -n 1)
-          if [ ! -z "$PLUGIN_PATH" ]; then
-            echo "找到插件路径: $PLUGIN_PATH"
-            cp android/receive_sharing_intent_fix.gradle "$PLUGIN_PATH/android/"
-            echo "apply from: 'receive_sharing_intent_fix.gradle'" >> "$PLUGIN_PATH/android/build.gradle"
-            echo "已应用修复"
-          else
-            echo "警告: 未找到插件路径"
-          fi
-
-      # 确保 NDK 版本兼容
-      - name: 确保 NDK 兼容性
-        run: |
-          echo "确保 Android NDK 版本兼容性"
-          mkdir -p android/app/src/main/jniLibs
-          echo "设置正确的 NDK 版本 27.0.12077973"
-
-      # 禁用树摇优化以解决潜在图标问题
+      # 构建APK
       - name: 构建APK
         run: flutter build apk --release --no-tree-shake-icons
 

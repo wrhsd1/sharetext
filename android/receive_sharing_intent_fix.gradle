@@ -6,25 +6,36 @@ ext {
     javaVersion = JavaVersion.VERSION_1_8
 }
 
-android {
-    compileOptions {
-        sourceCompatibility javaVersion
-        targetCompatibility javaVersion
-    }
-
-    kotlinOptions {
-        jvmTarget = javaVersion.toString()
-    }
-}
-
-// 修复所有 Kotlin 编译任务
+// 安全地配置 android 块
 afterEvaluate {
-    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-        kotlinOptions {
-            jvmTarget = javaVersion.toString()
+    android {
+        compileOptions {
+            sourceCompatibility javaVersion
+            targetCompatibility javaVersion
+        }
+
+        // 在项目中存在 kotlinOptions 的情况下设置 kotlinOptions
+        try {
+            kotlinOptions {
+                jvmTarget = javaVersion.toString()
+            }
+        } catch (Exception e) {
+            logger.warn("无法设置 kotlinOptions: ${e.message}")
         }
     }
+
+    // 修复所有 Kotlin 编译任务
+    try {
+        tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+            kotlinOptions {
+                jvmTarget = javaVersion.toString()
+            }
+        }
+    } catch (Exception e) {
+        logger.warn("无法配置 KotlinCompile 任务: ${e.message}")
+    }
     
+    // 修复所有 Java 编译任务
     tasks.withType(JavaCompile).configureEach {
         sourceCompatibility = javaVersion.toString()
         targetCompatibility = javaVersion.toString()
