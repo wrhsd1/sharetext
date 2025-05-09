@@ -1,19 +1,18 @@
 name: sharetext
-description: A simple app to receive shared text from other apps
-publish_to: 'none'
+description: A simple Flutter app that receives and saves shared text
+publish_to: 'none' 
+
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
+  sdk: ">=2.17.0 <3.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.2
-  shared_preferences: ^2.2.2
-  path_provider: ^2.1.1
+  shared_preferences: ^2.0.15
   receive_sharing_intent: ^1.4.5
-  intl: ^0.18.1
+  cupertino_icons: ^1.0.2
 
 dev_dependencies:
   flutter_test:
@@ -22,5 +21,3 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-  assets:
-    - assets/ 
