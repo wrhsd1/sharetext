@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
@@ -45,25 +44,21 @@ class _MyHomePageState extends State<MyHomePage> {
     _loadSavedText();
 
     // For sharing or opening urls/text coming from outside the app while the app is in the memory
-    _intentDataStreamSubscription = ReceiveSharingIntent.getInitialTextAsStream().listen((String? value) {
-      if (!mounted) return; // 检查 widget 是否仍然挂载
+    _intentDataStreamSubscription = ReceiveSharingIntent.getTextStream().listen((String value) {
       setState(() {
         _sharedText = value;
-        if (value != null) {
-          _textController.text = value;
-        }
+        _textController.text = _sharedText ?? _textController.text;
       });
     }, onError: (err) {
-      developer.log('Error receiving shared text: $err', name: 'simple_text_saver');
+      print("getLinkStream error: $err");
     });
 
     // For sharing or opening urls/text coming from outside the app while the app is closed
-    ReceiveSharingIntent.getInitialSharedText().then((String? value) {
-      if (!mounted) return; // 检查 widget 是否仍然挂载
+    ReceiveSharingIntent.getInitialText().then((String? value) {
       setState(() {
         _sharedText = value;
-        if (value != null) {
-          _textController.text = value;
+        if (_sharedText != null) {
+          _textController.text = _sharedText!;
         }
       });
     });
