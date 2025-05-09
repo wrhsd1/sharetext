@@ -73,10 +73,18 @@ jobs:
       # 构建APK (禁用图标树摇以避免一些潜在的问题)
       - name: 构建APK
         run: |
-          # 先修复receive_sharing_intent插件的兼容性问题
-          echo "修复receive_sharing_intent插件兼容性..."
+          # 确保所有依赖都是最新的
+          echo "获取最新依赖并执行清理..."
           flutter clean
           flutter pub get
+          
+          # 确保使用Android嵌入V2
+          echo "验证Android嵌入V2配置..."
+          # 检查AndroidManifest.xml中的必要元数据
+          grep -q 'flutterEmbedding.*2' android/app/src/main/AndroidManifest.xml || echo "警告：AndroidManifest.xml中缺少正确的flutterEmbedding元数据"
+          
+          # 构建APK
+          echo "构建APK..."
           flutter build apk --release --no-tree-shake-icons
         
       # 创建GitHub Release而不是使用artifacts
