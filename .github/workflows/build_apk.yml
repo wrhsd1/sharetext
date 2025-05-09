@@ -89,8 +89,17 @@ jobs:
 
       - name: Fix Android build configuration
         run: |
-          # 修复 receive_sharing_intent 插件的 AndroidManifest.xml
+          # 设置插件路径
           PLUGIN_PATH="$HOME/.pub-cache/hosted/pub.dev/receive_sharing_intent-1.4.5/android"
+          
+          # 检查插件目录是否存在
+          if [ ! -d "$PLUGIN_PATH" ]; then
+            echo "Plugin directory not found at $PLUGIN_PATH"
+            find $HOME/.pub-cache -name "receive_sharing_intent*" -type d
+            exit 1
+          fi
+          
+          # 修复 receive_sharing_intent 插件的 AndroidManifest.xml
           MANIFEST_PATH="$PLUGIN_PATH/src/main/AndroidManifest.xml"
           if [ -f "$MANIFEST_PATH" ]; then
             # 备份原文件
@@ -101,7 +110,6 @@ jobs:
           fi
 
           # 修复插件的 build.gradle
-          if [ -d "$PLUGIN_PATH" ]; then
             echo 'plugins {' > "$PLUGIN_PATH/build.gradle"
             echo "    id 'com.android.library'" >> "$PLUGIN_PATH/build.gradle"
             echo '}' >> "$PLUGIN_PATH/build.gradle"
@@ -122,14 +130,36 @@ jobs:
             echo '}' >> "$PLUGIN_PATH/build.gradle"
           fi
 
+          # 创建插件的 build.gradle
+          echo 'plugins {' > "$PLUGIN_PATH/build.gradle"
+          echo "    id 'com.android.library'" >> "$PLUGIN_PATH/build.gradle"
+          echo '}' >> "$PLUGIN_PATH/build.gradle"
+          echo '' >> "$PLUGIN_PATH/build.gradle"
+          echo 'android {' >> "$PLUGIN_PATH/build.gradle"
+          echo '    namespace "com.kasem.receive_sharing_intent"' >> "$PLUGIN_PATH/build.gradle"
+          echo '    compileSdkVersion 33' >> "$PLUGIN_PATH/build.gradle"
+          echo '' >> "$PLUGIN_PATH/build.gradle"
+          echo '    defaultConfig {' >> "$PLUGIN_PATH/build.gradle"
+          echo '        minSdkVersion 16' >> "$PLUGIN_PATH/build.gradle"
+          echo '        targetSdkVersion 33' >> "$PLUGIN_PATH/build.gradle"
+          echo '    }' >> "$PLUGIN_PATH/build.gradle"
+          echo '' >> "$PLUGIN_PATH/build.gradle"
+          echo '    compileOptions {' >> "$PLUGIN_PATH/build.gradle"
+          echo '        sourceCompatibility JavaVersion.VERSION_11' >> "$PLUGIN_PATH/build.gradle"
+          echo '        targetCompatibility JavaVersion.VERSION_11' >> "$PLUGIN_PATH/build.gradle"
+          echo '    }' >> "$PLUGIN_PATH/build.gradle"
+          echo '}' >> "$PLUGIN_PATH/build.gradle"
+          echo "Fixed plugin build.gradle"
+
           # 修复 NDK 版本问题
           mkdir -p android/app
-          {
-            echo 'plugins {'
-            echo '    id("com.android.application")'
-            echo '    kotlin("android")'
-            echo '    id("dev.flutter.flutter-gradle-plugin")'
-            echo '}'
+          
+          # 创建应用的 build.gradle.kts
+          echo 'plugins {' > "android/app/build.gradle.kts"
+          echo '    id("com.android.application")' >> "android/app/build.gradle.kts"
+          echo '    kotlin("android")' >> "android/app/build.gradle.kts"
+          echo '    id("dev.flutter.flutter-gradle-plugin")' >> "android/app/build.gradle.kts"
+          echo '}' >> "android/app/build.gradle.kts"
             echo ''
             echo 'android {'
             echo '    namespace = "com.example.simple_text_saver"'
@@ -168,17 +198,72 @@ jobs:
             echo 'flutter {'
             echo '    source = ".."'
             echo '}'
-          } > "android/app/build.gradle.kts"
-            echo "Fixed receive_sharing_intent plugin build.gradle"
-          else
-            echo "Plugin directory not found at $PLUGIN_PATH"
-            find $HOME/.pub-cache -name "receive_sharing_intent*" -type d
-          fi
+          
+          # 继续添加应用配置
+          echo '' >> "android/app/build.gradle.kts"
+          echo 'android {' >> "android/app/build.gradle.kts"
+          echo '    namespace = "com.example.simple_text_saver"' >> "android/app/build.gradle.kts"
+          echo '    compileSdk = 33' >> "android/app/build.gradle.kts"
+          echo '    ndkVersion = "27.0.12077973"' >> "android/app/build.gradle.kts"
+          echo '' >> "android/app/build.gradle.kts"
+          echo '    defaultConfig {' >> "android/app/build.gradle.kts"
+          echo '        applicationId = "com.example.simple_text_saver"' >> "android/app/build.gradle.kts"
+          echo '        minSdk = 16' >> "android/app/build.gradle.kts"
+          echo '        targetSdk = 33' >> "android/app/build.gradle.kts"
+          echo '        versionCode = 1' >> "android/app/build.gradle.kts"
+          echo '        versionName = "1.0"' >> "android/app/build.gradle.kts"
+          echo '    }' >> "android/app/build.gradle.kts"
+          echo '' >> "android/app/build.gradle.kts"
+          echo '    buildTypes {' >> "android/app/build.gradle.kts"
+          echo '        release {' >> "android/app/build.gradle.kts"
+          echo '            isMinifyEnabled = false' >> "android/app/build.gradle.kts"
+          echo '            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")' >> "android/app/build.gradle.kts"
+          echo '        }' >> "android/app/build.gradle.kts"
+          echo '    }' >> "android/app/build.gradle.kts"
+          echo '' >> "android/app/build.gradle.kts"
+          echo '    compileOptions {' >> "android/app/build.gradle.kts"
+          echo '        sourceCompatibility = JavaVersion.VERSION_11' >> "android/app/build.gradle.kts"
+          echo '        targetCompatibility = JavaVersion.VERSION_11' >> "android/app/build.gradle.kts"
+          echo '    }' >> "android/app/build.gradle.kts"
+          echo '' >> "android/app/build.gradle.kts"
+          echo '    kotlinOptions {' >> "android/app/build.gradle.kts"
+          echo '        jvmTarget = JavaVersion.VERSION_11.toString()' >> "android/app/build.gradle.kts"
+          echo '    }' >> "android/app/build.gradle.kts"
+          echo '}' >> "android/app/build.gradle.kts"
+          echo '' >> "android/app/build.gradle.kts"
+          echo 'dependencies {' >> "android/app/build.gradle.kts"
+          echo '    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.10")' >> "android/app/build.gradle.kts"
+          echo '}' >> "android/app/build.gradle.kts"
+          echo '' >> "android/app/build.gradle.kts"
+          echo 'flutter {' >> "android/app/build.gradle.kts"
+          echo '    source = ".."' >> "android/app/build.gradle.kts"
+          echo '}' >> "android/app/build.gradle.kts"
           
           # 创建项目级别的 build.gradle.kts
-          {
-            echo 'buildscript {'
-            echo '    extra["kotlin_version"] = "1.6.10"'
+          echo 'buildscript {' > "android/build.gradle.kts"
+          echo '    extra["kotlin_version"] = "1.6.10"' >> "android/build.gradle.kts"
+          echo '' >> "android/build.gradle.kts"
+          echo '    repositories {' >> "android/build.gradle.kts"
+          echo '        google()' >> "android/build.gradle.kts"
+          echo '        mavenCentral()' >> "android/build.gradle.kts"
+          echo '    }' >> "android/build.gradle.kts"
+          echo '' >> "android/build.gradle.kts"
+          echo '    dependencies {' >> "android/build.gradle.kts"
+          echo '        classpath("com.android.tools.build:gradle:7.3.0")' >> "android/build.gradle.kts"
+          echo '        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${extra[\\"kotlin_version\\"]}")' >> "android/build.gradle.kts"
+          echo '    }' >> "android/build.gradle.kts"
+          echo '}' >> "android/build.gradle.kts"
+          echo '' >> "android/build.gradle.kts"
+          echo 'allprojects {' >> "android/build.gradle.kts"
+          echo '    repositories {' >> "android/build.gradle.kts"
+          echo '        google()' >> "android/build.gradle.kts"
+          echo '        mavenCentral()' >> "android/build.gradle.kts"
+          echo '    }' >> "android/build.gradle.kts"
+          echo '}' >> "android/build.gradle.kts"
+          echo '' >> "android/build.gradle.kts"
+          echo 'tasks.register("clean", Delete::class) {' >> "android/build.gradle.kts"
+          echo '    delete(rootProject.buildDir)' >> "android/build.gradle.kts"
+          echo '}'  >> "android/build.gradle.kts"
             echo ''
             echo '    repositories {'
             echo '        google()'
