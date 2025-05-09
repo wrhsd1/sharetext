@@ -1,66 +1,110 @@
-name: Build and Release
+name: 构建APK
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, master ]
   pull_request:
-    branches: [ main ]
-  workflow_dispatch:
+    branches: [ main, master ]
+  workflow_dispatch:  # 允许手动触发
+
+permissions:
+  contents: write  # 允许工作流创建releases和提交文件
+  packages: read
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
-      - uses: actions/checkout@v3
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 获取完整的提交历史
       
-      - name: Set up JDK 11
+      # 获取最新的 commit message 并设置为版本号
+      - name: 设置版本号
+        run: |
+          # 获取最新的 commit message
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          echo "Commit message: $COMMIT_MSG"
+          
+          # 检查 commit message 是否符合版本号格式 (x.y.z)
+          if [[ $COMMIT_MSG =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "版本号: $COMMIT_MSG"
+            # 更新 pubspec.yaml 中的版本号
+            sed -i "s/^version: .*/version: $COMMIT_MSG+1/" pubspec.yaml
+            echo "已更新 pubspec.yaml 中的版本号为 $COMMIT_MSG"
+          else
+            echo "Commit message 不符合版本号格式，将使用默认版本号"
+          fi
+          
+          # 显示更新后的版本号
+          echo "当前版本号:"
+          grep "^version: " pubspec.yaml
+
+      # 设置Java环境并缓存
+      - name: 设置Java环境
         uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
           java-version: '11'
-      
-      - name: Set up Flutter
+          cache: 'gradle'
+
+      # 设置Flutter环境并开启缓存
+      - name: 设置Flutter环境
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.10.0'
           channel: 'stable'
-      
-      - name: Get dependencies
+          cache: true
+
+      # 缓存Flutter依赖
+      - name: 缓存Flutter依赖
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.pub-cache
+            .dart_tool
+            .flutter-plugins
+            .flutter-plugins-dependencies
+            build
+          key: flutter-deps-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            flutter-deps-
+
+      - name: 获取依赖
         run: flutter pub get
-      
-      - name: Build APK
+        
+      # 提取提交信息和版本号
+      - name: 提取提交信息和版本号
+        id: commit_info
+        run: |
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          COMMIT_HASH=$(git rev-parse --short HEAD)
+          BUILD_NUMBER=${{ github.run_number }}
+          echo "COMMIT_MESSAGE=${COMMIT_MSG}" >> $GITHUB_ENV
+          echo "COMMIT_HASH=${COMMIT_HASH}" >> $GITHUB_ENV
+          echo "VERSION_NAME=1.0.${BUILD_NUMBER}-${COMMIT_HASH}" >> $GITHUB_ENV
+          echo "version_name=1.0.${BUILD_NUMBER}-${COMMIT_HASH}" >> $GITHUB_OUTPUT
+          echo "commit_message=${COMMIT_MSG}" >> $GITHUB_OUTPUT
+
+      # 构建APK
+      - name: 构建APK
         run: flutter build apk --release
 
-      - name: Get version from pubspec
-        id: version
-        run: |
-          VERSION=$(grep 'version:' pubspec.yaml | awk '{print $2}' | tr -d '\r')
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          
-      - name: Get commit message
-        id: commit
-        run: |
-          COMMIT_MSG=$(git log -1 --pretty=%B | tr -d '\n')
-          echo "message=$COMMIT_MSG" >> $GITHUB_OUTPUT
-          
-      - name: Upload APK
-        uses: actions/upload-artifact@v3
-        with:
-          name: sharetext-${{ steps.version.outputs.version }}-${{ github.run_number }}
-          path: build/app/outputs/flutter-apk/app-release.apk
-      
-      - name: Create Release
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      # 直接创建一个GitHub Release
+      - name: 创建Release发布
+        if: success()
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: v${{ steps.version.outputs.version }}+${{ github.run_number }}
-          name: Release v${{ steps.version.outputs.version }} Build ${{ github.run_number }}
+          tag_name: build-${{ github.run_number }}
+          name: 自动构建 ${{ env.VERSION_NAME }}
+          files: build/app/outputs/flutter-apk/app-release.apk
+          token: ${{ secrets.GITHUB_TOKEN }}
+          draft: false
+          prerelease: true
           body: |
-            ${{ steps.commit.outputs.message }}
-            
-            Automatically built APK from commit ${{ github.sha }}
-          files: |
-            build/app/outputs/flutter-apk/app-release.apk
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+            这是GitHub Actions自动构建的APK。
+            版本: ${{ env.VERSION_NAME }}
+            构建时间: ${{ github.event.repository.updated_at }}
+            提交信息: ${{ env.COMMIT_MESSAGE }} 
