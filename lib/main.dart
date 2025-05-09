@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 
 void main() {
   runApp(const MyApp());
@@ -13,17 +13,20 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Share Text App',
+      title: 'Simple Text Saver',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueAccent),
+        useMaterial3: true,
       ),
-      home: const MyHomePage(),
+      home: const MyHomePage(title: 'Simple Text Saver'),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key});
+  const MyHomePage({super.key, required this.title});
+
+  final String title;
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -31,32 +34,31 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final TextEditingController _textController = TextEditingController();
+  String _savedText = "";
   StreamSubscription? _intentDataStreamSubscription;
-  String _sharedText = "";
-  final String _savedTextKey = 'saved_text';
+  String? _sharedText;
 
   @override
   void initState() {
     super.initState();
     _loadSavedText();
 
-    // For sharing or sending text.
-    _intentDataStreamSubscription =
-        ReceiveSharingIntent.getTextStream().listen((String value) {
+    // For sharing or opening urls/text coming from outside the app while the app is in the memory
+    _intentDataStreamSubscription = ReceiveSharingIntent.getTextStream().listen((String value) {
       setState(() {
         _sharedText = value;
-        _textController.text = _sharedText;
+        _textController.text = _sharedText ?? _textController.text;
       });
     }, onError: (err) {
-      // print("getLinkStream error: $err");
+      print("getLinkStream error: $err");
     });
 
-    // For sharing or sending text when the app is closed.
+    // For sharing or opening urls/text coming from outside the app while the app is closed
     ReceiveSharingIntent.getInitialText().then((String? value) {
       setState(() {
-        if (value != null) {
-          _sharedText = value;
-          _textController.text = _sharedText;
+        _sharedText = value;
+        if (_sharedText != null) {
+          _textController.text = _sharedText!;
         }
       });
     });
@@ -65,20 +67,26 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void dispose() {
     _intentDataStreamSubscription?.cancel();
-    _textController.dispose();
     super.dispose();
   }
 
   Future<void> _loadSavedText() async {
     final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _textController.text = prefs.getString(_savedTextKey) ?? _sharedText;
-    });
+    // Only load saved text if there's no shared text to override it
+    if (_sharedText == null) {
+       setState(() {
+        _textController.text = prefs.getString('saved_text') ?? '';
+        _savedText = _textController.text;
+      });
+    }
   }
 
   Future<void> _saveText() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_savedTextKey, _textController.text);
+    await prefs.setString('saved_text', _textController.text);
+    setState(() {
+      _savedText = _textController.text;
+    });
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Text saved!')),
     );
@@ -88,7 +96,8 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Share Text App'),
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: Text(widget.title),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -97,20 +106,28 @@ class _MyHomePageState extends State<MyHomePage> {
           children: <Widget>[
             TextField(
               controller: _textController,
-              maxLines: 5,
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
-                labelText: 'Enter or paste text here',
+                labelText: 'Enter text to save or share here',
               ),
+              maxLines: 5,
             ),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _saveText,
               child: const Text('Save Text'),
             ),
+            const SizedBox(height: 20),
+            const Text(
+              'Previously saved text (if any):',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(_savedText.isEmpty ? "No text saved yet." : _savedText),
           ],
         ),
       ),
     );
   }
 }
+
