@@ -11,7 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
   shared_preferences: ^2.2.3 # Added shared_preferences
-  receive_sharing_intent: 1.4.5 # Using fixed version for stability
+  receive_sharing_intent: ^1.6.9 # Added receive_sharing_intent
 
   cupertino_icons: ^1.0.8
 

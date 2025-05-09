@@ -89,77 +89,107 @@ jobs:
 
       - name: Fix Android build configuration
         run: |
+          # 设置工作目录
+          cd "$GITHUB_WORKSPACE"
+          
+          # 修复插件配置
+          flutter clean
+          flutter pub get
+          
           # 设置插件路径
           PLUGIN_PATH="$HOME/.pub-cache/hosted/pub.dev/receive_sharing_intent-1.4.5/android"
+          echo "Looking for plugin in: $PLUGIN_PATH"
           
-          # 检查插件目录是否存在
           if [ ! -d "$PLUGIN_PATH" ]; then
-            echo "Plugin directory not found at $PLUGIN_PATH"
+            echo "Searching for plugin directory..."
             find $HOME/.pub-cache -name "receive_sharing_intent*" -type d
             exit 1
           fi
+
+          # 修复插件配置
+          echo "Fixing plugin build configuration..."
           
-          # 修复 receive_sharing_intent 插件的 AndroidManifest.xml
+          # 修复 AndroidManifest.xml
           MANIFEST_PATH="$PLUGIN_PATH/src/main/AndroidManifest.xml"
           if [ -f "$MANIFEST_PATH" ]; then
-            # 备份原文件
             cp "$MANIFEST_PATH" "${MANIFEST_PATH}.bak"
-            # 移除 package 属性
             sed -i 's/package="[^"]*"//' "$MANIFEST_PATH"
-            echo "Fixed AndroidManifest.xml by removing package attribute"
+            echo "Fixed AndroidManifest.xml"
           fi
+          
+          # 更新插件的 build.gradle
+          echo "Updating plugin build.gradle..."
+          cat > "$PLUGIN_PATH/build.gradle" << 'EOF'
+plugins {
+    id 'com.android.library'
+}
 
-          # 修复插件的 build.gradle
-            echo 'plugins {' > "$PLUGIN_PATH/build.gradle"
-            echo "    id 'com.android.library'" >> "$PLUGIN_PATH/build.gradle"
-            echo '}' >> "$PLUGIN_PATH/build.gradle"
-            echo '' >> "$PLUGIN_PATH/build.gradle"
-            echo 'android {' >> "$PLUGIN_PATH/build.gradle"
-            echo '    namespace "com.kasem.receive_sharing_intent"' >> "$PLUGIN_PATH/build.gradle"
-            echo '    compileSdkVersion 33' >> "$PLUGIN_PATH/build.gradle"
-            echo '' >> "$PLUGIN_PATH/build.gradle"
-            echo '    defaultConfig {' >> "$PLUGIN_PATH/build.gradle"
-            echo '        minSdkVersion 16' >> "$PLUGIN_PATH/build.gradle"
-            echo '        targetSdkVersion 33' >> "$PLUGIN_PATH/build.gradle"
-            echo '    }' >> "$PLUGIN_PATH/build.gradle"
-            echo '' >> "$PLUGIN_PATH/build.gradle"
-            echo '    compileOptions {' >> "$PLUGIN_PATH/build.gradle"
-            echo '        sourceCompatibility JavaVersion.VERSION_11' >> "$PLUGIN_PATH/build.gradle"
-            echo '        targetCompatibility JavaVersion.VERSION_11' >> "$PLUGIN_PATH/build.gradle"
-            echo '    }' >> "$PLUGIN_PATH/build.gradle"
-            echo '}' >> "$PLUGIN_PATH/build.gradle"
-          fi
+android {
+    namespace "com.kasem.receive_sharing_intent"
+    compileSdkVersion 33
 
-          # 创建插件的 build.gradle
-          echo 'plugins {' > "$PLUGIN_PATH/build.gradle"
-          echo "    id 'com.android.library'" >> "$PLUGIN_PATH/build.gradle"
-          echo '}' >> "$PLUGIN_PATH/build.gradle"
-          echo '' >> "$PLUGIN_PATH/build.gradle"
-          echo 'android {' >> "$PLUGIN_PATH/build.gradle"
-          echo '    namespace "com.kasem.receive_sharing_intent"' >> "$PLUGIN_PATH/build.gradle"
-          echo '    compileSdkVersion 33' >> "$PLUGIN_PATH/build.gradle"
-          echo '' >> "$PLUGIN_PATH/build.gradle"
-          echo '    defaultConfig {' >> "$PLUGIN_PATH/build.gradle"
-          echo '        minSdkVersion 16' >> "$PLUGIN_PATH/build.gradle"
-          echo '        targetSdkVersion 33' >> "$PLUGIN_PATH/build.gradle"
-          echo '    }' >> "$PLUGIN_PATH/build.gradle"
-          echo '' >> "$PLUGIN_PATH/build.gradle"
-          echo '    compileOptions {' >> "$PLUGIN_PATH/build.gradle"
-          echo '        sourceCompatibility JavaVersion.VERSION_11' >> "$PLUGIN_PATH/build.gradle"
-          echo '        targetCompatibility JavaVersion.VERSION_11' >> "$PLUGIN_PATH/build.gradle"
-          echo '    }' >> "$PLUGIN_PATH/build.gradle"
-          echo '}' >> "$PLUGIN_PATH/build.gradle"
-          echo "Fixed plugin build.gradle"
+    defaultConfig {
+        minSdkVersion 16
+        targetSdkVersion 33
+    }
 
-          # 修复 NDK 版本问题
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+}
+EOF
+
+          # 设置应用配置
+          echo "Setting up app configuration..."
           mkdir -p android/app
           
           # 创建应用的 build.gradle.kts
-          echo 'plugins {' > "android/app/build.gradle.kts"
-          echo '    id("com.android.application")' >> "android/app/build.gradle.kts"
-          echo '    kotlin("android")' >> "android/app/build.gradle.kts"
-          echo '    id("dev.flutter.flutter-gradle-plugin")' >> "android/app/build.gradle.kts"
-          echo '}' >> "android/app/build.gradle.kts"
+          cat > "android/app/build.gradle.kts" << 'EOF'
+plugins {
+    id("com.android.application")
+    kotlin("android")
+    id("dev.flutter.flutter-gradle-plugin")
+}
+
+android {
+    namespace = "com.example.simple_text_saver"
+    compileSdk = 33
+    ndkVersion = "27.0.12077973"
+
+    defaultConfig {
+        applicationId = "com.example.simple_text_saver"
+        minSdk = 16
+        targetSdk = 33
+        versionCode = 1
+        versionName = "1.0"
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_11.toString()
+    }
+}
+
+dependencies {
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.10")
+}
+
+flutter {
+    source = ".."
+}
+EOF
             echo ''
             echo 'android {'
             echo '    namespace = "com.example.simple_text_saver"'
@@ -240,8 +270,32 @@ jobs:
           echo '}' >> "android/app/build.gradle.kts"
           
           # 创建项目级别的 build.gradle.kts
-          echo 'buildscript {' > "android/build.gradle.kts"
-          echo '    extra["kotlin_version"] = "1.6.10"' >> "android/build.gradle.kts"
+          cat > "android/build.gradle.kts" << 'EOF'
+buildscript {
+    extra["kotlin_version"] = "1.6.10"
+
+    repositories {
+        google()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath("com.android.tools.build:gradle:7.3.0")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${extra["kotlin_version"]}")
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+tasks.register("clean", Delete::class) {
+    delete(rootProject.buildDir)
+}
+EOF
           echo '' >> "android/build.gradle.kts"
           echo '    repositories {' >> "android/build.gradle.kts"
           echo '        google()' >> "android/build.gradle.kts"
@@ -292,20 +346,31 @@ jobs:
           echo "flutter.sdk=$FLUTTER_HOME" > android/local.properties
           echo "sdk.dir=$ANDROID_SDK_ROOT" >> android/local.properties
           
-          # 显示环境信息
+          # 确保本地配置正确
+          echo "flutter.sdk=$FLUTTER_HOME" > android/local.properties
+          echo "sdk.dir=$ANDROID_SDK_ROOT" >> android/local.properties
+          
+          # 显示配置信息
+          echo "===== Environment Info ====="
           echo "FLUTTER_HOME: $FLUTTER_HOME"
           echo "JAVA_HOME: $JAVA_HOME"
           echo "ANDROID_SDK_ROOT: $ANDROID_SDK_ROOT"
+          echo "===== Directory Structure ====="
           ls -la android/
+          echo "===== Build Files ====="
+          echo "android/build.gradle.kts:"
+          cat android/build.gradle.kts
+          echo "android/app/build.gradle.kts:"
+          cat android/app/build.gradle.kts
+          echo "===== Plugin Files ====="
+          echo "Plugin build.gradle:"
+          cat "$PLUGIN_PATH/build.gradle"
+          echo "Plugin AndroidManifest.xml:"
+          cat "$MANIFEST_PATH"
 
       - name: Build APK
         run: |
-          # 显示 Android 构建文件内容以便调试
-          echo "Content of android/build.gradle:"
-          cat android/build.gradle || echo "File not found"
-          
-          echo "Content of android/app/build.gradle:"
-          cat android/app/build.gradle || echo "File not found"
+          cd "$GITHUB_WORKSPACE"
           
           # 尝试构建
           flutter build apk --release --no-tree-shake-icons

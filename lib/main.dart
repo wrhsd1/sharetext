@@ -45,8 +45,8 @@ class _MyHomePageState extends State<MyHomePage> {
     _loadSavedText();
 
     // For sharing or opening urls/text coming from outside the app while the app is in the memory
-    _intentDataStreamSubscription = ReceiveSharingIntent.getTextStream().listen((String? value) {
-      if (!mounted) return;
+    _intentDataStreamSubscription = ReceiveSharingIntent.getInitialTextAsStream().listen((String? value) {
+      if (!mounted) return; // 检查 widget 是否仍然挂载
       setState(() {
         _sharedText = value;
         if (value != null) {
@@ -58,8 +58,8 @@ class _MyHomePageState extends State<MyHomePage> {
     });
 
     // For sharing or opening urls/text coming from outside the app while the app is closed
-    ReceiveSharingIntent.getInitialText().then((String? value) {
-      if (!mounted) return;
+    ReceiveSharingIntent.getInitialSharedText().then((String? value) {
+      if (!mounted) return; // 检查 widget 是否仍然挂载
       setState(() {
         _sharedText = value;
         if (value != null) {
@@ -87,19 +87,11 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> _saveText() async {
-    if (!mounted) return;
-    
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('saved_text', _textController.text);
-    
-    if (!mounted) return;
-    
     setState(() {
       _savedText = _textController.text;
     });
-    
-    if (!mounted) return;
-    
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Text saved!')),
     );
