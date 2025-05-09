@@ -11,8 +11,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    steps:
-      - uses: actions/checkout@v3
+    steps:      - uses: actions/checkout@v3
       
       # 设置Java环境并缓存
       - name: 设置Java环境
@@ -21,7 +20,7 @@ jobs:
           distribution: 'zulu'
           java-version: '11'
           cache: 'gradle'
-
+      
       # 设置Flutter环境并开启缓存
       - name: 设置Flutter环境
         uses: subosito/flutter-action@v2
@@ -31,10 +30,11 @@ jobs:
           cache: true
           cache-key: 'flutter-:os:-:channel:-:version:-:arch:-:hash:'
           cache-path: '${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:'
-          
+      
       - name: Install dependencies
         run: flutter pub get
-          - name: Build APK
+        
+      - name: Build APK
         run: flutter build apk --release
         
       - name: Upload APK
