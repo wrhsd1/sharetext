@@ -102,75 +102,73 @@ jobs:
 
           # 修复插件的 build.gradle
           if [ -d "$PLUGIN_PATH" ]; then
-            cat > "$PLUGIN_PATH/build.gradle" << 'EOL'
-plugins {
-    id 'com.android.library'
-}
-
-android {
-    namespace "com.kasem.receive_sharing_intent"
-    compileSdkVersion 33
-
-    defaultConfig {
-        minSdkVersion 16
-        targetSdkVersion 33
-    }
-
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_11
-        targetCompatibility JavaVersion.VERSION_11
-    }
-}
-EOL
+            echo 'plugins {' > "$PLUGIN_PATH/build.gradle"
+            echo "    id 'com.android.library'" >> "$PLUGIN_PATH/build.gradle"
+            echo '}' >> "$PLUGIN_PATH/build.gradle"
+            echo '' >> "$PLUGIN_PATH/build.gradle"
+            echo 'android {' >> "$PLUGIN_PATH/build.gradle"
+            echo '    namespace "com.kasem.receive_sharing_intent"' >> "$PLUGIN_PATH/build.gradle"
+            echo '    compileSdkVersion 33' >> "$PLUGIN_PATH/build.gradle"
+            echo '' >> "$PLUGIN_PATH/build.gradle"
+            echo '    defaultConfig {' >> "$PLUGIN_PATH/build.gradle"
+            echo '        minSdkVersion 16' >> "$PLUGIN_PATH/build.gradle"
+            echo '        targetSdkVersion 33' >> "$PLUGIN_PATH/build.gradle"
+            echo '    }' >> "$PLUGIN_PATH/build.gradle"
+            echo '' >> "$PLUGIN_PATH/build.gradle"
+            echo '    compileOptions {' >> "$PLUGIN_PATH/build.gradle"
+            echo '        sourceCompatibility JavaVersion.VERSION_11' >> "$PLUGIN_PATH/build.gradle"
+            echo '        targetCompatibility JavaVersion.VERSION_11' >> "$PLUGIN_PATH/build.gradle"
+            echo '    }' >> "$PLUGIN_PATH/build.gradle"
+            echo '}' >> "$PLUGIN_PATH/build.gradle"
           fi
 
           # 修复 NDK 版本问题
           mkdir -p android/app
-          cat > "android/app/build.gradle.kts" << 'EOL'
-plugins {
-    id("com.android.application")
-    kotlin("android")
-    id("dev.flutter.flutter-gradle-plugin")
-}
-
-android {
-    namespace = "com.example.simple_text_saver"
-    compileSdk = 33
-    ndkVersion = "27.0.12077973"
-
-    defaultConfig {
-        applicationId = "com.example.simple_text_saver"
-        minSdk = 16
-        targetSdk = 33
-        versionCode = 1
-        versionName = "1.0"
-    }
-
-    buildTypes {
-        release {
-            isMinifyEnabled = false
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-        }
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
-    }
-}
-
-dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.10")
-}
-
-flutter {
-    source = ".."
-}
-EOL
+          {
+            echo 'plugins {'
+            echo '    id("com.android.application")'
+            echo '    kotlin("android")'
+            echo '    id("dev.flutter.flutter-gradle-plugin")'
+            echo '}'
+            echo ''
+            echo 'android {'
+            echo '    namespace = "com.example.simple_text_saver"'
+            echo '    compileSdk = 33'
+            echo '    ndkVersion = "27.0.12077973"'
+            echo ''
+            echo '    defaultConfig {'
+            echo '        applicationId = "com.example.simple_text_saver"'
+            echo '        minSdk = 16'
+            echo '        targetSdk = 33'
+            echo '        versionCode = 1'
+            echo '        versionName = "1.0"'
+            echo '    }'
+            echo ''
+            echo '    buildTypes {'
+            echo '        release {'
+            echo '            isMinifyEnabled = false'
+            echo '            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")'
+            echo '        }'
+            echo '    }'
+            echo ''
+            echo '    compileOptions {'
+            echo '        sourceCompatibility = JavaVersion.VERSION_11'
+            echo '        targetCompatibility = JavaVersion.VERSION_11'
+            echo '    }'
+            echo ''
+            echo '    kotlinOptions {'
+            echo '        jvmTarget = JavaVersion.VERSION_11.toString()'
+            echo '    }'
+            echo '}'
+            echo ''
+            echo 'dependencies {'
+            echo '    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.10")'
+            echo '}'
+            echo ''
+            echo 'flutter {'
+            echo '    source = ".."'
+            echo '}'
+          } > "android/app/build.gradle.kts"
             echo "Fixed receive_sharing_intent plugin build.gradle"
           else
             echo "Plugin directory not found at $PLUGIN_PATH"
@@ -178,32 +176,32 @@ EOL
           fi
           
           # 创建项目级别的 build.gradle.kts
-          cat > "android/build.gradle.kts" << 'EOL'
-buildscript {
-    extra["kotlin_version"] = "1.6.10"
-    
-    repositories {
-        google()
-        mavenCentral()
-    }
-
-    dependencies {
-        classpath("com.android.tools.build:gradle:7.3.0")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${extra["kotlin_version"]}")
-    }
-}
-
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-    }
-}
-
-tasks.register("clean", Delete::class) {
-    delete(rootProject.buildDir)
-}
-EOL
+          {
+            echo 'buildscript {'
+            echo '    extra["kotlin_version"] = "1.6.10"'
+            echo ''
+            echo '    repositories {'
+            echo '        google()'
+            echo '        mavenCentral()'
+            echo '    }'
+            echo ''
+            echo '    dependencies {'
+            echo '        classpath("com.android.tools.build:gradle:7.3.0")'
+            echo '        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${extra[\\"kotlin_version\\"]}")'
+            echo '    }'
+            echo '}'
+            echo ''
+            echo 'allprojects {'
+            echo '    repositories {'
+            echo '        google()'
+            echo '        mavenCentral()'
+            echo '    }'
+            echo '}'
+            echo ''
+            echo 'tasks.register("clean", Delete::class) {'
+            echo '    delete(rootProject.buildDir)'
+            echo '}'
+          } > "android/build.gradle.kts"
 
           # 确保本地属性文件存在
           echo "flutter.sdk=$FLUTTER_HOME" > android/local.properties
