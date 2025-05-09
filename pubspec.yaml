@@ -1,16 +1,23 @@
 name: sharetext
-description: A simple Flutter app to input, save, and receive shared text.
+description: "A new Flutter project."
+# Prevent accidental publishing to pub.dev.
+publish_to: 'none'
+
 version: 1.0.0+1
+
 environment:
-  sdk: ">=3.0.0 <4.0.0"
+  sdk: '>=3.0.0 <4.0.0' # Adjusted SDK constraint for modern Flutter
+
 dependencies:
   flutter:
     sdk: flutter
-  shared_preferences: ^2.2.2
-  receive_sharing_intent: ^1.4.5
+  receive_sharing_intent: ^1.6.0 # Add this line
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
+  flutter_lints: ^3.0.0 # Or latest version
+
 flutter:
   uses-material-design: true

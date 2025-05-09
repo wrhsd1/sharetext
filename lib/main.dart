@@ -1,6 +1,7 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,87 +13,100 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'ShareText',
+      title: 'Share Text App',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const HomePage(),
+      home: const MyHomePage(),
     );
   }
 }
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
-  final TextEditingController _controller = TextEditingController();
-  String _savedText = '';
+class _MyHomePageState extends State<MyHomePage> {
+  final TextEditingController _textController = TextEditingController();
+  StreamSubscription? _intentDataStreamSubscription;
+  String _sharedText = "";
+  final String _savedTextKey = 'saved_text';
 
   @override
   void initState() {
     super.initState();
     _loadSavedText();
-    // 监听分享内容
-    ReceiveSharingIntent.getTextStream().listen((String? value) {
-      if (value != null) {
-        setState(() {
-          _controller.text = value;
-        });
-      }
-    }, onError: (err) {});
-    // App启动时的分享内容
-    ReceiveSharingIntent.getInitialText().then((String? value) {
-      if (value != null) {
-        setState(() {
-          _controller.text = value;
-        });
-      }
+
+    // For sharing or sending text.
+    _intentDataStreamSubscription =
+        ReceiveSharingIntent.getTextStream().listen((String value) {
+      setState(() {
+        _sharedText = value;
+        _textController.text = _sharedText;
+      });
+    }, onError: (err) {
+      // print("getLinkStream error: $err");
     });
+
+    // For sharing or sending text when the app is closed.
+    ReceiveSharingIntent.getInitialText().then((String? value) {
+      setState(() {
+        if (value != null) {
+          _sharedText = value;
+          _textController.text = _sharedText;
+        }
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _intentDataStreamSubscription?.cancel();
+    _textController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadSavedText() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      _savedText = prefs.getString('saved_text') ?? '';
-      _controller.text = _savedText;
+      _textController.text = prefs.getString(_savedTextKey) ?? _sharedText;
     });
   }
 
   Future<void> _saveText() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('saved_text', _controller.text);
-    setState(() {
-      _savedText = _controller.text;
-    });
+    await prefs.setString(_savedTextKey, _textController.text);
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('已保存')),
+      const SnackBar(content: Text('Text saved!')),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('ShareText')),
+      appBar: AppBar(
+        title: const Text('Share Text App'),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          children: [
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
             TextField(
-              controller: _controller,
+              controller: _textController,
               maxLines: 5,
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
-                labelText: '输入文本或接收分享内容',
+                labelText: 'Enter or paste text here',
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _saveText,
-              child: const Text('保存'),
+              child: const Text('Save Text'),
             ),
           ],
         ),
