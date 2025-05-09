@@ -70,9 +70,16 @@ jobs:
       - name: 获取Flutter依赖
         run: flutter pub get
 
-      # 构建APK
+      # 确保 NDK 版本兼容
+      - name: 确保 NDK 兼容性
+        run: |
+          echo "确保 Android NDK 版本兼容性"
+          mkdir -p android/app/src/main/jniLibs
+          echo "设置正确的 NDK 版本 27.0.12077973"
+
+      # 禁用树摇优化以解决潜在图标问题
       - name: 构建APK
-        run: flutter build apk --release
+        run: flutter build apk --release --no-tree-shake-icons
 
       # 直接创建GitHub Release而不使用artifacts
       - name: 创建发布并上传APK

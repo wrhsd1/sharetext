@@ -43,24 +43,31 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     _loadSavedText();
 
-    // For sharing or opening urls/text coming from outside the app while the app is in the memory
-    _intentDataStreamSubscription = ReceiveSharingIntent.getTextStream().listen((String value) {
+    // 监听应用程序在内存中时的外部分享
+    _intentDataStreamSubscription = ReceiveSharingIntent.instance.getMediaStream().listen((List<SharedMediaFile> value) {
       setState(() {
-        _sharedText = value;
-        _textController.text = _sharedText ?? _textController.text;
-      });
-    }, onError: (err) {
-      print("getLinkStream error: $err");
-    });
-
-    // For sharing or opening urls/text coming from outside the app while the app is closed
-    ReceiveSharingIntent.getInitialText().then((String? value) {
-      setState(() {
-        _sharedText = value;
-        if (_sharedText != null) {
-          _textController.text = _sharedText!;
+        if (value.isNotEmpty && value[0].type == SharedMediaType.text) {
+          _sharedText = value[0].path;
+          _textController.text = _sharedText ?? _textController.text;
         }
       });
+    }, onError: (err) {
+      print("getMediaStream error: $err");
+    });
+
+    // 处理应用程序关闭状态下的外部分享
+    ReceiveSharingIntent.instance.getInitialMedia().then((List<SharedMediaFile> value) {
+      setState(() {
+        if (value.isNotEmpty && value[0].type == SharedMediaType.text) {
+          _sharedText = value[0].path;
+          if (_sharedText != null) {
+            _textController.text = _sharedText!;
+          }
+        }
+      });
+      
+      // 告诉库我们已完成处理意图
+      ReceiveSharingIntent.instance.reset();
     });
   }
 
@@ -72,7 +79,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> _loadSavedText() async {
     final prefs = await SharedPreferences.getInstance();
-    // Only load saved text if there's no shared text to override it
+    // 只有在没有共享文本覆盖的情况下才加载保存的文本
     if (_sharedText == null) {
        setState(() {
         _textController.text = prefs.getString('saved_text') ?? '';
