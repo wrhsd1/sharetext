@@ -158,28 +158,10 @@
       "languageVersion": "3.0"
     },
     {
-      "name": "share_handler",
-      "rootUri": "file:///C:/Users/wr_hu/AppData/Local/Pub/Cache/hosted/pub.dev/share_handler-0.0.22",
+      "name": "receive_sharing_intent",
+      "rootUri": "file:///C:/Users/wr_hu/AppData/Local/Pub/Cache/hosted/pub.dev/receive_sharing_intent-1.4.5",
       "packageUri": "lib/",
-      "languageVersion": "2.14"
-    },
-    {
-      "name": "share_handler_android",
-      "rootUri": "file:///C:/Users/wr_hu/AppData/Local/Pub/Cache/hosted/pub.dev/share_handler_android-0.0.9",
-      "packageUri": "lib/",
-      "languageVersion": "2.14"
-    },
-    {
-      "name": "share_handler_ios",
-      "rootUri": "file:///C:/Users/wr_hu/AppData/Local/Pub/Cache/hosted/pub.dev/share_handler_ios-0.0.15",
-      "packageUri": "lib/",
-      "languageVersion": "2.14"
-    },
-    {
-      "name": "share_handler_platform_interface",
-      "rootUri": "file:///C:/Users/wr_hu/AppData/Local/Pub/Cache/hosted/pub.dev/share_handler_platform_interface-0.0.6",
-      "packageUri": "lib/",
-      "languageVersion": "2.14"
+      "languageVersion": "2.12"
     },
     {
       "name": "shared_preferences",
@@ -296,7 +278,7 @@
       "languageVersion": "3.7"
     }
   ],
-  "generated": "2025-05-09T08:48:55.175758Z",
+  "generated": "2025-05-09T08:59:48.930846Z",
   "generator": "pub",
   "generatorVersion": "3.7.2",
   "flutterRoot": "file:///D:/Tools/flutter",

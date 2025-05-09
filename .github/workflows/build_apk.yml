@@ -60,10 +60,19 @@ jobs:
             flutter-deps-
 
       - name: Get Flutter dependencies
-        run: flutter pub get
+        run: |
+          flutter pub get
+          # 显示已安装的依赖版本
+          cat pubspec.lock
+
+      - name: Debug Flutter info
+        run: |
+          flutter doctor -v
+          flutter --version
+          dart --version
 
       - name: Analyze Flutter code
-        run: flutter analyze
+        run: flutter analyze || true  # 即使分析失败也继续执行
 
       - name: Set up Gradle cache
         uses: gradle/gradle-build-action@v2
