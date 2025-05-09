@@ -89,27 +89,24 @@ jobs:
           # 修复 receive_sharing_intent 插件
           PLUGIN_PATH="$HOME/.pub-cache/hosted/pub.dev/receive_sharing_intent-1.4.5/android/"
           if [ -d "$PLUGIN_PATH" ]; then
-            # 创建新的构建文件
-            cat > "$PLUGIN_PATH/build.gradle" << 'EOL'
-plugins {
-    id 'com.android.library'
-}
-
-android {
-    namespace "com.example.receive_sharing_intent"
-    compileSdkVersion 33
-
-    defaultConfig {
-        minSdkVersion 16
-        targetSdkVersion 33
-    }
-
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
-}
-EOL
+            echo 'plugins {' > "$PLUGIN_PATH/build.gradle"
+            echo "    id 'com.android.library'" >> "$PLUGIN_PATH/build.gradle"
+            echo '}' >> "$PLUGIN_PATH/build.gradle"
+            echo '' >> "$PLUGIN_PATH/build.gradle"
+            echo 'android {' >> "$PLUGIN_PATH/build.gradle"
+            echo '    namespace "com.example.receive_sharing_intent"' >> "$PLUGIN_PATH/build.gradle"
+            echo '    compileSdkVersion 33' >> "$PLUGIN_PATH/build.gradle"
+            echo '' >> "$PLUGIN_PATH/build.gradle"
+            echo '    defaultConfig {' >> "$PLUGIN_PATH/build.gradle"
+            echo '        minSdkVersion 16' >> "$PLUGIN_PATH/build.gradle"
+            echo '        targetSdkVersion 33' >> "$PLUGIN_PATH/build.gradle"
+            echo '    }' >> "$PLUGIN_PATH/build.gradle"
+            echo '' >> "$PLUGIN_PATH/build.gradle"
+            echo '    compileOptions {' >> "$PLUGIN_PATH/build.gradle"
+            echo '        sourceCompatibility JavaVersion.VERSION_1_8' >> "$PLUGIN_PATH/build.gradle"
+            echo '        targetCompatibility JavaVersion.VERSION_1_8' >> "$PLUGIN_PATH/build.gradle"
+            echo '    }' >> "$PLUGIN_PATH/build.gradle"
+            echo '}' >> "$PLUGIN_PATH/build.gradle"
             echo "Fixed receive_sharing_intent plugin build.gradle"
           else
             echo "Plugin directory not found at $PLUGIN_PATH"
