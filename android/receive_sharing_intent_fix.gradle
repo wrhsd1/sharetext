@@ -1,0 +1,32 @@
+// 该文件用于修复 receive_sharing_intent 插件的编译问题
+// 在 GitHub Actions 构建过程中，会将此文件复制到插件目录并应用
+
+ext {
+    // 设置统一的 Java 和 Kotlin 版本
+    javaVersion = JavaVersion.VERSION_1_8
+}
+
+android {
+    compileOptions {
+        sourceCompatibility javaVersion
+        targetCompatibility javaVersion
+    }
+
+    kotlinOptions {
+        jvmTarget = javaVersion.toString()
+    }
+}
+
+// 修复所有 Kotlin 编译任务
+afterEvaluate {
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+        kotlinOptions {
+            jvmTarget = javaVersion.toString()
+        }
+    }
+    
+    tasks.withType(JavaCompile).configureEach {
+        sourceCompatibility = javaVersion.toString()
+        targetCompatibility = javaVersion.toString()
+    }
+} 

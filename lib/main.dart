@@ -48,7 +48,7 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(() {
         if (value.isNotEmpty && value[0].type == SharedMediaType.text) {
           _sharedText = value[0].path;
-          _textController.text = _sharedText ?? _textController.text;
+        _textController.text = _sharedText ?? _textController.text;
         }
       });
     }, onError: (err) {
@@ -60,8 +60,8 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(() {
         if (value.isNotEmpty && value[0].type == SharedMediaType.text) {
           _sharedText = value[0].path;
-          if (_sharedText != null) {
-            _textController.text = _sharedText!;
+        if (_sharedText != null) {
+          _textController.text = _sharedText!;
           }
         }
       });

@@ -1,0 +1,38 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath "com.android.tools.build:gradle:7.3.0"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.10"
+    }
+}
+
+// 设置所有项目的配置
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    
+    // 为所有项目配置 Kotlin 和 Java 编译版本一致
+    plugins.withId('org.jetbrains.kotlin.android') {
+        tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+            kotlinOptions {
+                jvmTarget = JavaVersion.VERSION_1_8.toString()
+            }
+        }
+    }
+    
+    tasks.withType(JavaCompile).configureEach {
+        sourceCompatibility = JavaVersion.VERSION_1_8.toString()
+        targetCompatibility = JavaVersion.VERSION_1_8.toString()
+    }
+}
+
+// 清理任务
+task clean(type: Delete) {
+    delete rootProject.buildDir
+} 
